@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:edge
 
 LABEL maintainer="The Paperless Project https://github.com/the-paperless-project/paperless" \
       contributors="Guy Addadi <addadi@gmail.com>, Pit Kleyersburg <pitkley@googlemail.com>, \
@@ -22,6 +22,7 @@ RUN apk add --no-cache \
       libmagic \
       libpq \
       optipng \
+      ocrmypdf \
       poppler \
       python3 \
       shadow \
@@ -43,6 +44,8 @@ RUN apk add --no-cache \
     rm -r /usr/lib/python*/ensurepip && \
     cd /usr/src/paperless && \
     pip3 install --upgrade pip pipenv && \
+# Install missing dependencies for ocrmypdf
+    pip3 install --upgrade pluggy coloredlogs && \
     pipenv install --system --deploy && \
 # Remove build dependencies
     apk del .build-dependencies && \

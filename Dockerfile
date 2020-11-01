@@ -43,9 +43,10 @@ RUN apk add --no-cache \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     cd /usr/src/paperless && \
-    pip3 install --upgrade pip pipenv && \
+    pip3 install --upgrade --use-feature=2020-resolver pip pipenv && \
 # Install missing dependencies for ocrmypdf
-    pip3 install --upgrade pluggy coloredlogs && \
+    pip3 install --upgrade --use-feature=2020-resolver pluggy coloredlogs 'pdfminer.six!=20200720,<=20200726,>=20191110' && \
+# Install paperless dependencies
     pipenv install --system --deploy && \
 # Remove build dependencies
     apk del .build-dependencies && \

@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 LABEL maintainer="The Paperless Project https://github.com/the-paperless-project/paperless" \
       contributors="Guy Addadi <addadi@gmail.com>, Pit Kleyersburg <pitkley@googlemail.com>, \
@@ -10,8 +10,10 @@ COPY scripts/docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY scripts/gunicorn.conf /usr/src/paperless/
 
 # Set export and consumption directories
+# Disable pip cache
 ENV PAPERLESS_EXPORT_DIR=/export \
-    PAPERLESS_CONSUMPTION_DIR=/consume
+    PAPERLESS_CONSUMPTION_DIR=/consume \
+    PIP_NO_CACHE_DIR=true
 
 RUN apk add --no-cache \
       bash \

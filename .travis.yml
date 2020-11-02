@@ -1,44 +1,40 @@
 language: python
 
 before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -qq libpoppler-cpp-dev unpaper tesseract-ocr
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libpoppler-cpp-dev unpaper tesseract-ocr
 
 sudo: false
 
 matrix:
-    include:        
-        - python: "3.6"
-        - python: "3.7"
-        - python: "3.8"
-        - python: "3.9-dev"
-        - env:
-            - BUILD_DOCKER=1
-            # Variable to add to publish the Docker image:
-            # * DOCKER_USERNAME
-            # * DOCKER_PASSWORD, to be encrypted, use `travis encrypt DOCKER_PASSWORD=<password>`
-          services:
-            - docker
-          before_install:
-            - true
-          install:
-            - true
-          script:
-            - docker build --tag=the-paperless-project/paperless .
-          after_success:
-            - true
+  include:
+    - python: "3.6"
+    - python: "3.7"
+    - python: "3.8"
+    - python: "3.9-dev"
+    - env:
+        - BUILD_DOCKER=1
+        - secure: "rVM1sQeOftYjiuHAtZzC8E0LIiHUuRobPt+zjAoxEp5sexK4tv5IOVR4p5dp5GUscMJuDx39ScdCue1CLhmFPtpXK1O1qIU/3yVVjwwPteWrEJQQueexpPQoHFVU+YZ9Mn3M3QsqF4un/835TaI4DFt/KWnVSHZULgg5vE2XoZb6KaYWNzgyQlwKGaCwlhkeRmndEKisGvueK1vojoabPbWm9J/crPekQ/KZMUyMdFPjCcO195/ehY84KP3mnZ9CpEAehwJ22erp4kCoob0kI14fX07YZh5+rxi+0ZBMuD32Ixgpikn6uwmXbeP13lbxKo+1GhfRKe37rn3hOzFM+1tL63roxkjJTShYY1Za0ItOyF8Nm6HYwSIBINZ+ReW/7Jsx3qBTbp+OGp4S/o0+FYRVU3Lfe5xWrpisJQhuLCzpF0n7YwzntxIThLV7+EgQwE1nFYEhqCv7PzTjjHZrO714aSOt0M83qpfxmaQhda5CNwd0uyp+sscONFqUE0bA7w7M3ltQzBLXvQimlba8PflcQvqV827+keHqF2pUx+5IqgBLlbNDy8baCCUe4ZTM7RC5cDh9LzYbhIQpBE+ghj/lLjkr5EPrRwR+o9P8jlmx7oGRg8ZcuHi6XOLwVZcNFiwqc3dfGKY/Yr0FoWdy5pLWuZJy0Bh7jeklnn6tWhg="
+        - secure: "UGTKQP5xPcBHxg2i9KOZQmMQd2xiRtn29u6HXVTbr1kW+qHZeW+WiB2z/vpGqpcl4wRV9J11lpbf21Mpjtr7kuKf0vKmAFB6kX7Hz/0Au+uCaejjjj7RC+1Ro/Kc34cO5LFxNnTuTssNe4980WiNdS16LSCj+BSVJT0+ODxKvxFvR9AOLBN4faxxXOyXEQcnT8yP0we+xATZPAqpqf18IeEfUZWWr/NdqKDFcVCwVoUnwZu5Gzx1o8rDVc3AU8smRIvfIfkpeyGWmva6MLCpZnq9qrm0gZP6amX3h+iNH7NcSv4HdVkdh+HIYsJbEvi9wwxSfJMHIus/eiMR3QAm1/F/wzIUw2q8g+fhUZ6Fx7lwi6HNYozu2Le5TDpD+ehYfzP8P9RpKM8J0S0dNlojZYAkvVwb41MWIK0ibrmxcLRZjRPJaIs0Vmhnaf8Ez74LAfE5zJfTSAcAePYoEBq7S6QXQwIjq4qUijz4m9AgYEssr3zakuFTAin3oICZym5RNsGg3w6XYMy7uWwU0zzogUlTsQUvJtpS0pFu7PZq06NSMQPhJ59JenHu+jTNX1Y9L/fl9VaW5H7kWdVd5/xizGlA2Fdu0vCwahLqiLao9r0q3LxsDaQnV/DAgI1sdEnarwBaORwZp00+w+ZB9iwGQMEIQenUj5JVIhpPknIlF+4="
+      services:
+        - docker
+      before_install: []
+      install: []
+      script:
+        - docker build --tag=jaymedh/paperless:${TRAVIS_COMMIT} .
+      after_success: []
 
 install:
-    - pip install --upgrade pip pipenv sphinx
-    - pipenv lock -r > requirements.txt
-    - pipenv lock --dev -r >> requirements.txt
-    - pip install -r requirements.txt
+  - pip install --upgrade pip pipenv sphinx
+  - pipenv lock -r > requirements.txt
+  - pipenv lock --dev -r >> requirements.txt
+  - pip install -r requirements.txt
 
 script:
-    - cd src/
-    - pytest --cov
-    - pycodestyle
-    - sphinx-build -b html ../docs ../docs/_build -W
+  - cd src/
+  - pytest --cov
+  - pycodestyle
+  - sphinx-build -b html ../docs ../docs/_build -W
 
 after_success:
   - coveralls

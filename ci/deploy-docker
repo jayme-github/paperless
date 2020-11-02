@@ -1,15 +1,23 @@
 #!/bin/bash
+IMAGE_NAME="jaymedh/paperless"
 
 if [ "${DOCKER_USERNAME}" == "" -o "${DOCKER_PASSWORD}" == "" ]
 then
     exit 0
 fi
 
-docker login --username=${DOCKER_USERNAME} --password=${DOCKER_PASSWORD}
+echo "$DOCKER_PASSWORD" | docker login --username=${DOCKER_USERNAME} --password-stdin
+docker push ${IMAGE_NAME}:${TRAVIS_COMMIT}
+
 if [ "${TRAVIS_TAG}" != "" ]
 then
-    docker tag the-paperless-project/paperless the-paperless-project/paperless:${TRAVIS_TAG}
-    docker push the-paperless-project/paperless:${TRAVIS_TAG}
+    IMAGE_TAG=$TRAVIS_TAG
+elif [ "${TRAVIS_BRANCH}" == "master" ]
+then
+    IMAGE_TAG="latest"
 else
-    docker push the-paperless-project/paperless
+    exit 0
 fi
+
+docker tag ${IMAGE_NAME}:${TRAVIS_COMMIT} ${IMAGE_NAME}:${IMAGE_TAG}
+docker push ${IMAGE_NAME}:${IMAGE_TAG}

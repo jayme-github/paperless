@@ -175,7 +175,7 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
 
     search_fields = ("correspondent__name", "title", "content", "tags__name")
     readonly_fields = ("added", "file_type", "storage_type",)
-    list_display = ("title", "created", "added", "thumbnail", "correspondent",
+    list_display = ("title", "download", "created", "added", "correspondent",
                     "tags_")
     list_filter = (
         "tags",
@@ -280,17 +280,12 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
         return super().response_change(request, obj)
 
     @mark_safe
-    def thumbnail(self, obj):
+    def download(self, obj):
         return self._html_tag(
             "a",
-            self._html_tag(
-                "img",
-                src=reverse("fetch", kwargs={"kind": "thumb", "pk": obj.pk}),
-                width=180,
-                alt="Thumbnail of {}".format(obj.file_name),
-                title=obj.file_name
-            ),
-            href=obj.download_url
+            "Download",
+            href=obj.download_url,
+            thumb_url=reverse("fetch", kwargs={"kind": "thumb", "pk": obj.pk}),
         )
 
     @mark_safe
@@ -311,22 +306,6 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
                 }
             )
         return r
-
-    @mark_safe
-    def document(self, obj):
-        # TODO: is this method even used anymore?
-        return self._html_tag(
-            "a",
-            self._html_tag(
-                "img",
-                src=static("documents/img/{}.png".format(obj.file_type)),
-                width=22,
-                height=22,
-                alt=obj.file_type,
-                title=obj.file_name
-            ),
-            href=obj.download_url
-        )
 
     @staticmethod
     def _html_tag(kind, inside=None, **kwargs):

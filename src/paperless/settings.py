@@ -193,12 +193,14 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = os.getenv("PAPERLESS_TIME_ZONE", "UTC")
 
-USE_I18N = True
+USE_I18N = False
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
+TIME_FORMAT = "H:i"
+DATETIME_FORMAT = "N j, Y, H:i"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/

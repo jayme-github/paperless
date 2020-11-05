@@ -283,7 +283,11 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
     def download(self, obj):
         return self._html_tag(
             "a",
-            "Download",
+            self._html_tag(
+                "img",
+                src=static("paperless/img/pdf.svg"),
+                width="20px",
+            ),
             href=obj.download_url,
             thumb_url=reverse("fetch", kwargs={"kind": "thumb", "pk": obj.pk}),
         )

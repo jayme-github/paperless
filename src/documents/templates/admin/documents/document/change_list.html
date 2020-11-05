@@ -4,7 +4,7 @@
 {{ block.super }}
 <style>
 #thumbnail-view {
-    position: absolute;
+    position: fixed;
     display: none;
 	z-index: 10;
 	border: 2px solid #eaeaea;
@@ -21,7 +21,7 @@ $(document).ready(function(){
 			$thumbnail_view_img.attr("src", url);
 			$thumbnail_view.css({
 				top: event.clientY,
-				left: event.clientX,
+				left: event.clientX + 15,
 			}).show();
 		}, function(event){
 			setTimeout(function() {

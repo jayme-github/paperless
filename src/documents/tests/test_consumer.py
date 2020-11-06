@@ -160,12 +160,20 @@ class TestAttributes(TestCase):
             self.TAGS
         )
 
-    def test_guess_attributes_from_name_when_correspondent_empty(self):
+    def test_guess_attributes_from_name_when_correspondent_empty0(self):
         self._test_guess_attributes_from_name(
             '/path/to/ - weird empty correspondent but should not break.{}',
             None,
             'weird empty correspondent but should not break',
             ()
+        )
+
+    def test_guess_attributes_from_name_when_correspondent_empty1(self):
+        self._test_guess_attributes_from_name(
+            '/path/to/ - empty correspondent - tag1,tag2,tag3.{}',
+            None,
+            'empty correspondent',
+            self.TAGS
         )
 
     def test_guess_attributes_from_name_when_title_starts_with_dash(self):

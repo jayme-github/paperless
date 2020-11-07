@@ -40,6 +40,11 @@ pytest-env = "*"
 pytest-xdist = "*"
 sphinx = "*"
 tox = "*"
+darker = "*"
+black = "*"
+
+[pipenv]
+allow_prereleases = true
 
 [packages.fuzzywuzzy]
 extras = [ "speedup",]

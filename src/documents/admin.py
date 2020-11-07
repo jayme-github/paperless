@@ -154,7 +154,12 @@ class TagAdmin(CommonAdmin):
     readonly_fields = ("slug",)
 
     class Media:
-        js = ("js/colours.js",)
+        # colours.js get's included before jquery.init.js if dependency
+        # is not declared.
+        js = (
+            "admin/js/jquery.init.js",
+            "js/colours.js",
+        )
 
     def get_queryset(self, request):
         qs = super(TagAdmin, self).get_queryset(request)

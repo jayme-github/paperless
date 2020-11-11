@@ -27,6 +27,7 @@ psycopg2 = "*"
 djangoql = "*"
 whitenoise = "*"
 brotli = "*"
+colorhash = "*"
 
 [dev-packages]
 coveralls = "*"

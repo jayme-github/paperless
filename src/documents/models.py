@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from fuzzywuzzy import fuzz
 from collections import defaultdict
+from colorhash import ColorHash
 
 from .managers import LogManager
 
@@ -69,6 +70,13 @@ class MatchingModel(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def color_hex(self):
+        return ColorHash(
+            self.name,
+            lightness=(0.5, 0.55, 0.6, 0.65),
+            saturation=(0.35, 0.4, 0.45, 0.5)).hex
 
     @property
     def conditions(self):
@@ -166,24 +174,7 @@ class Correspondent(MatchingModel):
 
 
 class Tag(MatchingModel):
-
-    COLOURS = (
-        (1, "#a6cee3"),
-        (2, "#1f78b4"),
-        (3, "#b2df8a"),
-        (4, "#33a02c"),
-        (5, "#fb9a99"),
-        (6, "#e31a1c"),
-        (7, "#fdbf6f"),
-        (8, "#ff7f00"),
-        (9, "#cab2d6"),
-        (10, "#6a3d9a"),
-        (11, "#b15928"),
-        (12, "#000000"),
-        (13, "#cccccc")
-    )
-
-    colour = models.PositiveIntegerField(choices=COLOURS, default=1)
+    pass
 
 
 class Document(models.Model):

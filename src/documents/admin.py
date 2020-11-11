@@ -147,19 +147,11 @@ class CorrespondentAdmin(CommonAdmin):
 class TagAdmin(CommonAdmin):
 
     list_display = (
-        "name", "colour", "match", "matching_algorithm", "document_count")
-    list_filter = ("colour", "matching_algorithm")
-    list_editable = ("colour", "match", "matching_algorithm")
+        "name", "match", "matching_algorithm", "document_count")
+    list_filter = ("matching_algorithm",)
+    list_editable = ("match", "matching_algorithm")
 
     readonly_fields = ("slug",)
-
-    class Media:
-        # colours.js get's included before jquery.init.js if dependency
-        # is not declared.
-        js = (
-            "admin/js/jquery.init.js",
-            "js/colours.js",
-        )
 
     def get_queryset(self, request):
         qs = super(TagAdmin, self).get_queryset(request)
@@ -180,7 +172,7 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
 
     search_fields = ("correspondent__name", "title", "content", "tags__name")
     readonly_fields = ("added", "file_type", "storage_type",)
-    list_display = ("title", "download", "created", "added", "correspondent",
+    list_display = ("title", "download", "created", "added", "correspondent_",
                     "tags_")
     list_filter = (
         "tags",
@@ -301,19 +293,37 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
     def tags_(self, obj):
         r = ""
         for tag in obj.tags.all():
-            colour = tag.get_colour_display()
             r += self._html_tag(
                 "a",
                 tag.slug,
                 **{
                     "class": "tag",
-                    "style": "background-color: {};".format(colour),
+                    "style": "background-color: {};".format(tag.color_hex),
                     "href": "{}?tags__id__exact={}".format(
                         reverse("admin:documents_document_changelist"),
                         tag.pk
                     )
                 }
             )
+        return r
+
+    @mark_safe
+    def correspondent_(self, obj):
+        if not obj.correspondent:
+            return "-"
+        r = self._html_tag(
+            "a",
+            obj.correspondent.slug,
+            **{
+                "class": "tag",
+                "style": "background-color: {};".format(
+                    obj.correspondent.color_hex),
+                "href": "{}?correspondent__id__exact={}".format(
+                    reverse("admin:documents_document_changelist"),
+                    obj.correspondent.pk
+                )
+            }
+        )
         return r
 
     @staticmethod

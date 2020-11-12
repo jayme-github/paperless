@@ -15,7 +15,6 @@ djangorestframework = "*"
 factory-boy = "*"
 filemagic = "*"
 gunicorn = "*"
-inotify-simple = "*"
 langdetect = "*"
 pdftotext = "*"
 pyocr = "*"
@@ -28,6 +27,8 @@ djangoql = "*"
 whitenoise = "*"
 brotli = "*"
 colorhash = "*"
+fuzzywuzzy = {extras = [ "speedup",], version = "==0.15.0"}
+inotifyrecursive = ">=0.3.4"
 
 [dev-packages]
 coveralls = "*"
@@ -46,7 +47,3 @@ black = "*"
 
 [pipenv]
 allow_prereleases = true
-
-[packages.fuzzywuzzy]
-extras = [ "speedup",]
-version = "==0.15.0"

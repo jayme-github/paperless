@@ -80,25 +80,36 @@ class Consumer:
             "group": self.logging_group
         })
 
-    def consume_new_files(self):
+    def consume_new_files(self, recursive=False):
         """
         Find non-ignored files in consumption dir and consume them if they have
         been unmodified for FILES_MIN_UNMODIFIED_DURATION.
         """
         ignored_files = []
         files = []
-        for entry in os.scandir(self.consume):
-            if entry.is_file():
-                file = (entry.path, entry.stat().st_mtime)
-                if file in self._ignore:
-                    ignored_files.append(file)
-                else:
-                    files.append(file)
+
+        def _add_file(file):
+            if file in self._ignore:
+                ignored_files.append(file)
             else:
-                self.logger.warning(
-                    "Skipping %s as it is not a file",
-                    entry.path
-                )
+                files.append(file)
+
+        if recursive:
+            for dirpath, _, filenames in os.walk(self.consume):
+                for name in filenames:
+                    file_path = os.path.join(dirpath, name)
+                    file = (file_path, os.path.getmtime(file_path))
+                    _add_file(file)
+        else:
+            for entry in os.scandir(self.consume):
+                if entry.is_file():
+                    file = (entry.path, entry.stat().st_mtime)
+                    _add_file(file)
+                else:
+                    self.logger.warning(
+                        "Skipping %s as it is not a file",
+                        entry.path
+                    )
 
         if not files:
             return

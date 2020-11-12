@@ -294,6 +294,8 @@ CONSUMPTION_DIR = os.getenv("PAPERLESS_CONSUMPTION_DIR")
 # slowly, you may want to use a higher value than the default.
 CONSUMER_LOOP_TIME = int(os.getenv("PAPERLESS_CONSUMER_LOOP_TIME", 10))
 
+# Consume from subdirectories of CONSUMTION_DIR as well
+CONSUMER_RECURSIVE = __get_boolean("PAPERLESS_CONSUMER_RECURSIVE")
 # Pre-2.x versions of Paperless stored your documents locally with GPG
 # encryption, but that is no longer the default.  This behaviour is still
 # available, but it must be explicitly enabled by setting

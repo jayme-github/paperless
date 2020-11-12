@@ -301,6 +301,8 @@ CONSUMER_RECURSIVE = __get_boolean("PAPERLESS_CONSUMER_RECURSIVE")
 # the consumed file.
 # PAPERLESS_CONSUMER_RECURSIVE must be enabled for this to work.
 CONSUMER_SUBDIRS_AS_TAGS = __get_boolean("PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS")
+# Set to true to remove empty directories from $CONSUMPTION_DIR
+CONSUMER_CLEANUP_SUBDIRS = __get_boolean("PAPERLESS_CONSUMER_CLEANUP_SUBDIRS")
 
 # Pre-2.x versions of Paperless stored your documents locally with GPG
 # encryption, but that is no longer the default.  This behaviour is still

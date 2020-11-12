@@ -7,6 +7,8 @@ import re
 import time
 import uuid
 
+from errno import ENOTEMPTY
+from pathlib import Path
 from operator import itemgetter
 from django.conf import settings
 from django.utils import timezone
@@ -186,14 +188,29 @@ class Consumer:
                 "Document {} consumption finished".format(document)
             )
 
-            # TODO: Check if the directory structure containing the file
-            # is empty now and clean it up
-
             document_consumption_finished.send(
                 sender=self.__class__,
                 document=document,
                 logging_group=self.logging_group
             )
+
+            # Check if the directory structure containing the file
+            # is empty now and clean it up
+            if settings.CONSUMER_CLEANUP_SUBDIRS:
+                cdir = Path(settings.CONSUMPTION_DIR)
+                for path in Path(doc).parents:
+                    if path == cdir:
+                        break
+                    try:
+                        path.rmdir()
+                    except OSError as e:
+                        if e.errno == ENOTEMPTY:
+                            break
+                        self.log(
+                            "error",
+                            "Could not clean up {}: {}".format(path, e)
+                        )
+
             return True
 
     def _get_parser_class(self, doc):

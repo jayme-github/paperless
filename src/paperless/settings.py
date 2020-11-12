@@ -296,6 +296,12 @@ CONSUMER_LOOP_TIME = int(os.getenv("PAPERLESS_CONSUMER_LOOP_TIME", 10))
 
 # Consume from subdirectories of CONSUMTION_DIR as well
 CONSUMER_RECURSIVE = __get_boolean("PAPERLESS_CONSUMER_RECURSIVE")
+# Set the names of subdirectories as tags for consumed files.
+# E.g. $CONSUMPTION_DIR/foo/bar/file.pdf will add the tags "foo" and "bar" to
+# the consumed file.
+# PAPERLESS_CONSUMER_RECURSIVE must be enabled for this to work.
+CONSUMER_SUBDIRS_AS_TAGS = __get_boolean("PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS")
+
 # Pre-2.x versions of Paperless stored your documents locally with GPG
 # encryption, but that is no longer the default.  This behaviour is still
 # available, but it must be explicitly enabled by setting

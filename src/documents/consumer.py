@@ -186,6 +186,9 @@ class Consumer:
                 "Document {} consumption finished".format(document)
             )
 
+            # TODO: Check if the directory structure containing the file
+            # is empty now and clean it up
+
             document_consumption_finished.send(
                 sender=self.__class__,
                 document=document,
@@ -220,7 +223,7 @@ class Consumer:
 
     def _store(self, text, doc, thumbnail, date):
 
-        file_info = FileInfo.from_path(doc)
+        file_info = FileInfo.from_path(doc, settings.CONSUMER_SUBDIRS_AS_TAGS)
 
         stats = os.stat(doc)
 

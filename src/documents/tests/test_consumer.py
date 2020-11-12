@@ -1,6 +1,6 @@
 import re
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from unittest import mock
 from tempfile import TemporaryDirectory
 
@@ -70,12 +70,14 @@ class TestAttributes(TestCase):
         "PdF", "PnG", "JpG", "JPeG", "GiF", "TiFf", "TiF",
     )
 
-    def _test_guess_attributes_from_name(self, path, sender, title, tags):
+    @override_settings(CONSUMPTION_DIR="/path/to")
+    def _test_guess_attributes_from_name(self, path, sender, title, tags,
+                                         tags_from_path=False):
 
         for extension in self.EXTENSIONS:
 
             f = path.format(extension)
-            file_info = FileInfo.from_path(f)
+            file_info = FileInfo.from_path(f, tags_from_path=tags_from_path)
 
             if sender:
                 self.assertEqual(file_info.correspondent.name, sender, f)
@@ -84,7 +86,12 @@ class TestAttributes(TestCase):
 
             self.assertEqual(file_info.title, title, f)
 
-            self.assertEqual(tuple([t.slug for t in file_info.tags]), tags, f)
+            # assertCountEqual has a bad name, but test that the first
+            # sequence contains the same elements as second, regardless of
+            # their order.
+            self.assertCountEqual(tuple(
+                [t.slug for t in file_info.tags]), tags, f)
+
             if extension.lower() == "jpeg":
                 self.assertEqual(file_info.extension, "jpg", f)
             elif extension.lower() == "tif":
@@ -198,6 +205,15 @@ class TestAttributes(TestCase):
             'weird correspondent but should not break',
             '',
             ()
+        )
+
+    def test_guess_tags_from_path(self):
+        self._test_guess_attributes_from_name(
+            '/path/to/tag1/tag2/correspondent - title - tag2,tag3.{}',
+            'correspondent',
+            'title',
+            self.TAGS,
+            tags_from_path=True
         )
 
     def test_case_insensitive_tag_creation(self):

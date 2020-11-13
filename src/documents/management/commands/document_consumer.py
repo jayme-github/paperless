@@ -9,7 +9,7 @@ from ...consumer import Consumer, ConsumerError
 from ...mail import MailFetcher, MailFetcherError
 
 try:
-    from inotify_simple import INotify, flags
+    from inotifyrecursive import INotify, flags
 except ImportError:
     INotify = flags = None
 
@@ -64,6 +64,12 @@ class Command(BaseCommand):
             help="Don't use inotify, even if it's available.",
             default=False
         )
+        parser.add_argument(
+            "--recursive",
+            action="store_true",
+            help="consume from subdirectories of the consumption directory.",
+            default=False
+        )
 
     def handle(self, *args, **options):
 
@@ -72,6 +78,7 @@ class Command(BaseCommand):
         loop_time = options["loop_time"]
         mail_delta = options["mail_delta"] * 60
         use_inotify = INotify is not None and options["no_inotify"] is False
+        recursive = options["recursive"] or settings.CONSUMER_RECURSIVE
 
         try:
             self.file_consumer = Consumer(consume=directory)
@@ -82,8 +89,9 @@ class Command(BaseCommand):
         for d in (self.ORIGINAL_DOCS, self.THUMB_DOCS):
             os.makedirs(d, exist_ok=True)
 
-        logging.getLogger(__name__).info(
-            "Starting document consumer at {}{}".format(
+        self.logger.info(
+            "Starting{} document consumer at {}{}".format(
+                " recursive" if recursive else "",
                 directory,
                 " with inotify" if use_inotify else ""
             )
@@ -94,22 +102,22 @@ class Command(BaseCommand):
         else:
             try:
                 if use_inotify:
-                    self.loop_inotify(mail_delta)
+                    self.loop_inotify(mail_delta, recursive=recursive)
                 else:
-                    self.loop(loop_time, mail_delta)
+                    self.loop(loop_time, mail_delta, recursive=recursive)
             except KeyboardInterrupt:
                 print("Exiting")
 
-    def loop(self, loop_time, mail_delta):
+    def loop(self, loop_time, mail_delta, recursive=False):
         while True:
             start_time = time.time()
             if self.verbosity > 1:
                 print(".", int(start_time))
-            self.loop_step(mail_delta, start_time)
+            self.loop_step(mail_delta, start_time, recursive=recursive)
             # Sleep until the start of the next loop step
             time.sleep(max(0, start_time + loop_time - time.time()))
 
-    def loop_step(self, mail_delta, time_now=None):
+    def loop_step(self, mail_delta, time_now=None, recursive=False):
 
         # Occasionally fetch mail and store it to be consumed on the next loop
         # We fetch email when we first start up so that it is not necessary to
@@ -119,15 +127,19 @@ class Command(BaseCommand):
             self.first_iteration = False
             self.mail_fetcher.pull()
 
-        self.file_consumer.consume_new_files()
+        self.file_consumer.consume_new_files(recursive=recursive)
 
-    def loop_inotify(self, mail_delta):
+    def loop_inotify(self, mail_delta, recursive=False):
         directory = self.file_consumer.consume
         inotify = INotify()
-        inotify.add_watch(directory, flags.CLOSE_WRITE | flags.MOVED_TO)
+        inotify_flags = flags.CLOSE_WRITE | flags.MOVED_TO
+        if recursive:
+            inotify.add_watch_recursive(directory, inotify_flags)
+        else:
+            inotify.add_watch(directory, inotify_flags)
 
         # Run initial mail fetch and consume all currently existing documents
-        self.loop_step(mail_delta)
+        self.loop_step(mail_delta, recursive=recursive)
         next_mail_time = self.mail_fetcher.last_checked + mail_delta
 
         while True:
@@ -136,7 +148,11 @@ class Command(BaseCommand):
                 delta = next_mail_time - time.time()
                 if delta > 0:
                     for event in inotify.read(timeout=delta):
-                        file = os.path.join(directory, event.name)
+                        if recursive:
+                            path = inotify.get_path(event.wd)
+                        else:
+                            path = directory
+                        file = os.path.join(path, event.name)
                         if os.path.isfile(file):
                             self.file_consumer.try_consume_file(file)
                         else:

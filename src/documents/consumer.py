@@ -7,6 +7,8 @@ import re
 import time
 import uuid
 
+from errno import ENOTEMPTY
+from pathlib import Path
 from operator import itemgetter
 from django.conf import settings
 from django.utils import timezone
@@ -80,25 +82,36 @@ class Consumer:
             "group": self.logging_group
         })
 
-    def consume_new_files(self):
+    def consume_new_files(self, recursive=False):
         """
         Find non-ignored files in consumption dir and consume them if they have
         been unmodified for FILES_MIN_UNMODIFIED_DURATION.
         """
         ignored_files = []
         files = []
-        for entry in os.scandir(self.consume):
-            if entry.is_file():
-                file = (entry.path, entry.stat().st_mtime)
-                if file in self._ignore:
-                    ignored_files.append(file)
-                else:
-                    files.append(file)
+
+        def _add_file(file):
+            if file in self._ignore:
+                ignored_files.append(file)
             else:
-                self.logger.warning(
-                    "Skipping %s as it is not a file",
-                    entry.path
-                )
+                files.append(file)
+
+        if recursive:
+            for dirpath, _, filenames in os.walk(self.consume):
+                for name in filenames:
+                    file_path = os.path.join(dirpath, name)
+                    file = (file_path, os.path.getmtime(file_path))
+                    _add_file(file)
+        else:
+            for entry in os.scandir(self.consume):
+                if entry.is_file():
+                    file = (entry.path, entry.stat().st_mtime)
+                    _add_file(file)
+                else:
+                    self.logger.warning(
+                        "Skipping %s as it is not a file",
+                        entry.path
+                    )
 
         if not files:
             return
@@ -180,6 +193,24 @@ class Consumer:
                 document=document,
                 logging_group=self.logging_group
             )
+
+            # Check if the directory structure containing the file
+            # is empty now and clean it up
+            if settings.CONSUMER_CLEANUP_SUBDIRS:
+                cdir = Path(settings.CONSUMPTION_DIR)
+                for path in Path(doc).parents:
+                    if path == cdir:
+                        break
+                    try:
+                        path.rmdir()
+                    except OSError as e:
+                        if e.errno == ENOTEMPTY:
+                            break
+                        self.log(
+                            "error",
+                            "Could not clean up {}: {}".format(path, e)
+                        )
+
             return True
 
     def _get_parser_class(self, doc):
@@ -209,7 +240,7 @@ class Consumer:
 
     def _store(self, text, doc, thumbnail, date):
 
-        file_info = FileInfo.from_path(doc)
+        file_info = FileInfo.from_path(doc, settings.CONSUMER_SUBDIRS_AS_TAGS)
 
         stats = os.stat(doc)
 

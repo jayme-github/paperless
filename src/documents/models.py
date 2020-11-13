@@ -5,6 +5,7 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from pathlib import Path
 
 import dateutil.parser
 from django.dispatch import receiver
@@ -698,7 +699,7 @@ class FileInfo:
             )
 
     @classmethod
-    def from_path(cls, path):
+    def from_path(cls, path, tags_from_path=False):
         """
         We use a crude naming convention to make handling the correspondent,
         title, and tags easier:
@@ -718,6 +719,7 @@ class FileInfo:
                 break
 
         # Parse filename components.
+        properties = {}
         for regex in cls.REGEXES.values():
             m = regex.match(filename)
             if m:
@@ -727,4 +729,17 @@ class FileInfo:
                 cls._mangle_property(properties, "title")
                 cls._mangle_property(properties, "tags")
                 cls._mangle_property(properties, "extension")
-                return cls(**properties)
+                break
+
+        # Parse additional tags from file path
+        if tags_from_path:
+            path_tags = Path(path).relative_to(
+                settings.CONSUMPTION_DIR).parent.parts
+            if path_tags:
+                tags = list(properties.get("tags", ()))
+                for tag in cls._get_tags(",".join(path_tags)):
+                    if tag not in tags:
+                        tags.append(tag)
+                properties["tags"] = tuple(tags)
+
+        return cls(**properties)

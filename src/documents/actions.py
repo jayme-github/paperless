@@ -137,6 +137,25 @@ def remove_correspondent_from_selected(modeladmin, request, queryset):
     )
 
 
+def _remove_inbox_tag(doc):
+    try:
+        tag = doc.tags.get(slug="inbox")
+        doc.tags.remove(tag)
+    except Tag.DoesNotExist:
+        pass
+
+
+def remove_inbox_tag_from_selected(modeladmin, request, queryset):
+    return simple_action(
+        modeladmin=modeladmin,
+        request=request,
+        queryset=queryset,
+        success_message="Successfully removed INBOX tag from %(count)d "
+                        "%(items)s.",
+        document_action=_remove_inbox_tag
+    )
+
+
 add_tag_to_selected.short_description = "Add tag to selected documents"
 remove_tag_from_selected.short_description = \
     "Remove tag from selected documents"
@@ -144,3 +163,5 @@ set_correspondent_on_selected.short_description = \
     "Set correspondent on selected documents"
 remove_correspondent_from_selected.short_description = \
     "Remove correspondent from selected documents"
+remove_inbox_tag_from_selected.short_description = \
+    "Remove the INBOX tag from selected documents"

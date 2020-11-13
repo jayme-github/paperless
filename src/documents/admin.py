@@ -16,6 +16,7 @@ from djangoql.admin import DjangoQLSearchMixin
 from documents.actions import (
     add_tag_to_selected,
     remove_correspondent_from_selected,
+    remove_inbox_tag_from_selected,
     remove_tag_from_selected,
     set_correspondent_on_selected
 )
@@ -188,7 +189,8 @@ class DocumentAdmin(DjangoQLSearchMixin, CommonAdmin):
         add_tag_to_selected,
         remove_tag_from_selected,
         set_correspondent_on_selected,
-        remove_correspondent_from_selected
+        remove_correspondent_from_selected,
+        remove_inbox_tag_from_selected
     ]
 
     date_hierarchy = "created"

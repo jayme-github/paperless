@@ -76,8 +76,8 @@ class MatchingModel(models.Model):
     def color_hex(self):
         return ColorHash(
             self.name,
-            lightness=(0.5, 0.55, 0.6, 0.65),
-            saturation=(0.35, 0.4, 0.45, 0.5)).hex
+            lightness=(0.35, 0.45, 0.55, 0.65),
+            saturation=(0.2, 0.3, 0.4, 0.5)).hex
 
     @property
     def conditions(self):
